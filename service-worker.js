@@ -1,15 +1,16 @@
 "use strict";
 
-const CACHE_NAME = "matematicki-klub-v7";
+const CACHE_NAME = "matematicki-klub-v8";
 const APP_FILES = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./manifest.webmanifest",
-  "./icon-192.png",
-  "./icon-512.png",
-  "./apple-touch-icon.png"
+  "./favicon.ico?v=1",
+  "./icon-192.png?v=2",
+  "./icon-512.png?v=2",
+  "./apple-touch-icon.png?v=2"
 ];
 
 self.addEventListener("install", (event) => {
