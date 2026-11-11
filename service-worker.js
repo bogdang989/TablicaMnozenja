@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "matematicki-klub-v10";
+const CACHE_NAME = "matematicki-klub-v11";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -34,7 +34,14 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith(
-    caches.match(event.request)
-      .then((cachedResponse) => cachedResponse || fetch(event.request))
+    fetch(event.request, { cache: "no-cache" })
+      .then((response) => {
+        if (response.ok && new URL(event.request.url).origin === self.location.origin) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request, { ignoreSearch: true }))
   );
 });
