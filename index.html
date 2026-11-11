@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="sr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#1489e9">
+    <meta name="description" content="Edukativne igre za vežbanje gradiva osnovne škole, organizovane po razredima i predmetima.">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./styles.css">
+    <title>Mala matematika — igre za vežbanje</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <div class="status-bar" aria-hidden="true"><span>10:24</span><span class="status-icons">◆ ◖ ▰</span></div>
+
+      <section id="home-screen" class="screen scene-screen home-screen">
+        <div class="home-art" aria-hidden="true">
+          <div class="sun-glow"></div>
+          <div class="cloud cloud-one"></div>
+          <div class="cloud cloud-two"></div>
+          <div class="hill hill-back"></div>
+          <div class="hill hill-front"></div>
+          <div class="tree tree-left"><i></i><i></i><i></i></div>
+          <div class="tree tree-right"><i></i><i></i><i></i></div>
+          <div class="chalkboard"><span>3 × 4 = 12</span><span>7 × 6 = 42</span><i></i></div>
+          <div class="owl"><span class="owl-cap"></span><span class="owl-eye eye-left"></span><span class="owl-eye eye-right"></span><span class="owl-beak"></span><span class="owl-book">×</span></div>
+          <span class="flower flower-one">✿</span><span class="flower flower-two">✿</span>
+          <span class="sparkle sparkle-one">✦</span><span class="sparkle sparkle-two">✦</span>
+        </div>
+        <div class="home-content">
+          <div class="title-lockup">
+            <p class="game-title">Mala<br><span>Matematika</span></p>
+            <div class="ribbon">Glavni meni</div>
+          </div>
+          <label class="sr-only" for="player-name">Ime igrača</label>
+          <input id="player-name" class="name-input" type="text" maxlength="18" autocomplete="given-name" placeholder="Ime igrača" value="Igrač">
+          <div class="menu-panel">
+            <section id="grade-step" class="menu-step" aria-labelledby="grade-heading">
+              <p id="grade-heading" class="menu-label">Izaberi razred</p>
+              <div id="grade-picker" class="grade-grid" role="group" aria-label="Razred">
+                <button class="menu-choice grade-choice" type="button" disabled>1. razred</button>
+                <button class="menu-choice grade-choice" type="button" data-grade="2">2. razred</button>
+                <button class="menu-choice grade-choice" type="button" disabled>3. razred</button>
+                <button class="menu-choice grade-choice" type="button" disabled>4. razred</button>
+                <button class="menu-choice grade-choice" type="button" disabled>5. razred</button>
+                <button class="menu-choice grade-choice" type="button" disabled>6. razred</button>
+                <button class="menu-choice grade-choice" type="button" disabled>7. razred</button>
+                <button class="menu-choice grade-choice" type="button" disabled>8. razred</button>
+              </div>
+              <p class="menu-footnote">Ostali razredi biće dostupni naknadno.</p>
+            </section>
+            <section id="subject-step" class="menu-step" aria-labelledby="subject-heading" hidden>
+              <div class="menu-step-heading">
+                <button id="subjects-back-button" class="step-back-button" type="button">← Razredi</button>
+                <p id="subject-heading" class="menu-label">2. razred · Izaberi predmet</p>
+              </div>
+              <div id="subject-picker" class="choice-grid" role="group" aria-label="Predmet">
+                <button class="menu-choice" type="button" data-subject="matematika"><span aria-hidden="true">➗</span> Matematika</button>
+                <button class="menu-choice" type="button" data-subject="srpski"><span aria-hidden="true">АБ</span> Srpski jezik</button>
+                <button class="menu-choice" type="button" disabled>Svet oko nas</button>
+                <button class="menu-choice" type="button" disabled>Engleski jezik</button>
+                <button class="menu-choice" type="button" disabled>Likovna kultura</button>
+                <button class="menu-choice" type="button" disabled>Muzička kultura</button>
+                <button class="menu-choice" type="button" disabled>Fizičko vaspitanje</button>
+                <button class="menu-choice" type="button" disabled>Digitalni svet</button>
+                <button class="menu-choice" type="button" disabled>Građansko vaspitanje / veronauka</button>
+              </div>
+              <p class="menu-footnote">Trenutno su dostupni matematika i srpski jezik.</p>
+            </section>
+            <section id="game-step" class="menu-step" aria-labelledby="game-heading" hidden>
+              <div class="menu-step-heading">
+                <button id="games-back-button" class="step-back-button" type="button">← Predmeti</button>
+                <p id="game-heading" class="menu-label">Izaberi igru</p>
+              </div>
+              <div id="game-picker" class="game-cards" role="radiogroup" aria-label="Igra">
+                <button class="game-card is-selected" type="button" role="radio" aria-checked="true" data-game="mnozenje" data-subject-game="matematika">
+                  <span class="game-card-icon" aria-hidden="true">×</span>
+                  <span class="game-card-name">Tablica množenja</span>
+                  <span class="game-card-desc">Brzi kviz · 60 sekundi</span>
+                </button>
+                <button class="game-card" type="button" role="radio" aria-checked="false" data-game="spojnice" data-subject-game="srpski" hidden>
+                  <span class="game-card-icon" aria-hidden="true">Ђ</span>
+                  <span class="game-card-name">Spojnice</span>
+                  <span class="game-card-desc">Ćirilica i latinica</span>
+                </button>
+                <button class="game-card upcoming-game" type="button" disabled data-subject-game="matematika">
+                  <span class="game-card-icon" aria-hidden="true">🔒</span>
+                  <span class="game-card-name">Matematički izazovi</span>
+                  <span class="game-card-desc">Uskoro</span>
+                </button>
+                <button class="game-card upcoming-game" type="button" disabled data-subject-game="srpski" hidden>
+                  <span class="game-card-icon" aria-hidden="true">🔒</span>
+                  <span class="game-card-name">Pravopisni izazovi</span>
+                  <span class="game-card-desc">Uskoro</span>
+                </button>
+              </div>
+              <p class="menu-label">Težina</p>
+              <div id="difficulty-picker" class="difficulty-row" role="radiogroup" aria-label="Težina">
+                <button class="difficulty-button" type="button" role="radio" aria-checked="false" data-difficulty="lako">Lako</button>
+                <button class="difficulty-button is-selected" type="button" role="radio" aria-checked="true" data-difficulty="srednje">Srednje</button>
+                <button class="difficulty-button" type="button" role="radio" aria-checked="false" data-difficulty="tesko">Teško</button>
+              </div>
+              <p id="difficulty-hint" class="difficulty-hint"></p>
+            </section>
+          </div>
+          <button id="start-button" class="game-button green-button start-button" type="button" hidden><span class="play-icon" aria-hidden="true">▶</span> Pokreni igru</button>
+          <div class="home-menu">
+            <button id="home-scores-button" class="game-button blue-button" type="button"><span aria-hidden="true">🏆</span> Rang lista</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="ready-screen" class="screen scene-screen ready-screen" hidden>
+        <div class="ready-landscape" aria-hidden="true"><div class="cloud cloud-one"></div><div class="cloud cloud-two"></div><div class="hill hill-back"></div><div class="hill hill-front"></div><div class="tree tree-left"><i></i><i></i><i></i></div><div class="tree tree-right"><i></i><i></i><i></i></div></div>
+        <button id="ready-back-button" class="back-button" type="button" aria-label="Nazad na početni ekran">←</button>
+        <div class="ready-content">
+          <div class="ready-banner">Spremi se!</div>
+          <div id="ready-game-name" class="ribbon ready-ribbon">Tablica množenja</div>
+          <div id="rules-board" class="rules-board"></div>
+          <button id="begin-round-button" class="game-button green-button ready-start" type="button">Počni! <span class="play-icon" aria-hidden="true">▶</span></button>
+        </div>
+      </section>
+
+      <section id="game-screen" class="screen scene-screen play-screen" hidden>
+        <div class="play-landscape" aria-hidden="true"><div class="cloud cloud-one"></div><div class="cloud cloud-two"></div><div class="hill hill-back"></div><div class="hill hill-front"></div><div class="tree tree-left"><i></i><i></i><i></i></div><div class="tree tree-right"><i></i><i></i><i></i></div></div>
+        <div class="game-hud">
+          <div class="hud-pill timer-pill"><span aria-hidden="true">⏱️</span><strong id="timer-text">1:00</strong></div>
+          <div class="hud-pill score-pill">Poeni: <strong id="score-text">0</strong></div>
+          <div class="hud-pill answer-counts"><span class="count-correct">✔ Tačno: <strong id="correct-text">0</strong></span><span class="count-wrong">✖ Netačno: <strong id="wrong-text">0</strong></span></div>
+        </div>
+        <div class="round-progress" aria-hidden="true"><div id="timer-fill" class="timer-fill"></div></div>
+        <div class="question-board">
+          <div id="question-text" class="question-text" aria-live="polite">8 × 4 = ?</div>
+        </div>
+        <div id="answer-grid" class="answer-grid" role="group" aria-label="Ponuđeni odgovori">
+          <button class="answer-button" type="button"></button>
+          <button class="answer-button" type="button"></button>
+          <button class="answer-button" type="button"></button>
+          <button class="answer-button" type="button"></button>
+        </div>
+        <button id="quit-button" class="game-button blue-button quit-button" type="button"><span aria-hidden="true">←</span> Izađi iz igre</button>
+        <div id="feedback-overlay" class="feedback-overlay" hidden>
+          <div id="feedback-card" class="feedback-card">
+            <div id="feedback-icon" class="feedback-icon" aria-hidden="true">✓</div>
+            <h2 id="feedback-title">Tačno!</h2>
+            <p id="feedback-points">+5 poena</p>
+            <p id="correct-answer-note" class="correct-answer-note" hidden></p>
+          </div>
+        </div>
+      </section>
+
+      <section id="match-screen" class="screen scene-screen match-screen" hidden>
+        <div class="play-landscape" aria-hidden="true"><div class="cloud cloud-one"></div><div class="cloud cloud-two"></div><div class="hill hill-back"></div><div class="hill hill-front"></div><div class="tree tree-left"><i></i><i></i><i></i></div><div class="tree tree-right"><i></i><i></i><i></i></div></div>
+        <div class="match-topbar">
+          <button id="match-quit-button" class="game-button blue-button match-quit" type="button"><span aria-hidden="true">←</span> Izađi</button>
+          <div class="hud-pill match-title">Ćirilica ⇄ Latinica</div>
+          <div class="hud-pill match-counter">Spojeno: <strong id="match-count">0</strong>/10</div>
+        </div>
+        <p id="match-instruction" class="match-instruction">Dodirni ćirilično slovo, pa njegov par u latinici.</p>
+        <div id="match-board" class="match-board">
+          <div id="match-left" class="match-column" aria-label="Ćirilična slova"></div>
+          <div id="match-right" class="match-column" aria-label="Latinična slova"></div>
+          <svg id="match-lines" class="match-lines" aria-hidden="true"></svg>
+        </div>
+        <div class="match-actions">
+          <button id="match-done-button" class="game-button green-button match-done" type="button" disabled>Gotovo ✓</button>
+          <div id="match-result" class="match-result" hidden>
+            <p id="match-result-text" role="status"></p>
+            <button id="match-continue-button" class="game-button green-button" type="button">Nastavi <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+      </section>
+
+      <section id="results-screen" class="screen scene-screen results-screen" hidden>
+        <div class="results-rays" aria-hidden="true"></div>
+        <span class="result-star result-star-one" aria-hidden="true">★</span>
+        <span class="result-star result-star-two" aria-hidden="true">★</span>
+        <div class="results-heading">
+          <div class="results-banner">Kraj igre!</div>
+          <p id="result-title" class="result-greeting">Tvoj rezultat</p>
+          <div class="final-score-ribbon"><strong id="final-score">0</strong> poena</div>
+          <div class="result-stats">
+            <p><span>✅</span> <em id="final-correct-label" class="stat-label">Tačni odgovori</em>: <strong id="final-correct">0</strong></p>
+            <p><span>❌</span> <em id="final-wrong-label" class="stat-label">Netačni odgovori</em>: <strong id="final-wrong">0</strong></p>
+          </div>
+          <p id="result-message" class="result-message"></p>
+          <p id="storage-message" class="storage-message" role="status" hidden></p>
+        </div>
+        <section class="leaderboard" aria-labelledby="leaderboard-title">
+          <div class="leaderboard-title"><span aria-hidden="true">🏆</span><h2 id="leaderboard-title">Rang lista</h2></div>
+          <p id="leaderboard-context" class="leaderboard-context"></p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">#</th><th scope="col">Ime</th><th scope="col">Tačni</th><th scope="col">Poeni</th></tr></thead>
+              <tbody id="leaderboard-body"></tbody>
+            </table>
+            <p id="empty-leaderboard" class="empty-leaderboard" hidden>Još nema rezultata. Budi prvi!</p>
+          </div>
+          <p class="local-note">Rezultati se čuvaju na ovom uređaju</p>
+        </section>
+        <div class="results-actions">
+          <button id="play-again-button" class="game-button green-button" type="button">⟳ Igraj ponovo</button>
+          <button id="home-button" class="game-button blue-button" type="button">⌂ Glavni meni</button>
+        </div>
+      </section>
+
+      <section id="scores-screen" class="screen scene-screen scores-screen" hidden>
+        <div class="scores-card">
+          <button id="scores-back-button" class="back-button" type="button" aria-label="Nazad na početni ekran">←</button>
+          <div class="scores-title"><span aria-hidden="true">🏆</span>          <h1>Rang lista</h1></div>
+                    <p class="scores-subtitle">Najbolji rezultati na ovom uređaju</p>
+                    <div id="rank-game-filter" class="filter-row" role="group" aria-label="Igra">
+                      <button class="filter-chip is-selected" type="button" data-game="mnozenje">Množenje</button>
+                      <button class="filter-chip" type="button" data-game="spojnice">Spojnice</button>
+                    </div>
+                    <div id="rank-difficulty-filter" class="filter-row" role="group" aria-label="Težina">
+                      <button class="filter-chip" type="button" data-difficulty="lako">Lako</button>
+                      <button class="filter-chip is-selected" type="button" data-difficulty="srednje">Srednje</button>
+                      <button class="filter-chip" type="button" data-difficulty="tesko">Teško</button>
+                    </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">#</th><th scope="col">Ime</th><th scope="col">Tačni</th><th scope="col">Poeni</th></tr></thead>
+              <tbody id="scores-body"></tbody>
+            </table>
+            <p id="scores-empty" class="empty-leaderboard" hidden>Još nema rezultata. Odigraj prvu partiju!</p>
+          </div>
+          <p id="scores-message" class="storage-message" role="status" hidden>Tabela rezultata ne može da se učita.</p>
+          <p class="local-note">Rezultati se čuvaju na ovom uređaju</p>
+          <button id="scores-home-button" class="game-button blue-button" type="button">⌂ Glavni meni</button>
+        </div>
+      </section>
+    </main>
+    <script src="./app.js" defer></script>
+  </body>
+</html>

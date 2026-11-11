@@ -1,0 +1,20 @@
+{
+  "name": "Mala matematika",
+  "short_name": "Mala matematika",
+  "description": "Edukativne igre za vežbanje gradiva osnovne škole po razredima i predmetima.",
+  "lang": "sr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7f8fc",
+  "theme_color": "#1489e9",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
