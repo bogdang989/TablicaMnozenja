@@ -2,7 +2,7 @@
 
 const SCORE_STORAGE_KEY = "matematicki-klub-high-scores-v1";
 const MAX_SCORES = 10;
-const ROUND_MS = 60000;
+const ROUND_MS = 30000;
 const MATCH_COUNT = 10;
 const POINTS_CORRECT = 5;
 const POINTS_WRONG = 3;
@@ -32,7 +32,7 @@ const GAMES = {
     correctLabel: "Tačni odgovori",
     wrongLabel: "Netačni odgovori",
     rules: (difficulty) => [
-      ["⏱️", "Vreme igre:", "60 sekundi"],
+      ["⏱️", "Vreme igre:", "30 sekundi"],
       ["⭐", "Tačan odgovor:", `+${POINTS_CORRECT} poena`, "plus"],
       ["❌", "Netačan odgovor:", `−${POINTS_WRONG} poena`, "minus"],
       ["🔢", "Izaberi jedan od", "4 odgovora"],
