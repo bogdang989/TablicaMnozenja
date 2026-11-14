@@ -516,7 +516,7 @@ tbody tr:first-child td { background: #ffe783; color: #09244f; }
 .game-card-icon { font-family: "Nunito", sans-serif; font-size: 34px; font-weight: 1000; line-height: 1; color: #0c63c5; }
 .game-card-name { font-size: clamp(15px, 2.4vw, 19px); font-weight: 1000; }
 .game-card-desc { color: #5d6f8c; font-size: 11px; font-weight: 800; }
-.difficulty-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.difficulty-row { display: grid; grid-template-columns: repeat(var(--option-count, 3), 1fr); gap: 8px; }
 .difficulty-button { min-height: 44px; border: 3px solid #b9d4f2; border-radius: 13px; background: linear-gradient(#fff, #e3efff); color: #102b59; cursor: pointer; font-size: 16px; font-weight: 1000; box-shadow: 0 3px 0 #6f9bd0; touch-action: manipulation; }
 .difficulty-button.is-selected { border-color: #1b6fd8; background: linear-gradient(#3b97f5, #0a63c9); color: #fff; text-shadow: 0 1px 2px #07366d; box-shadow: 0 3px 0 #08428a; }
 .difficulty-hint { min-height: 17px; margin: 9px 0 0; color: #5d4a2b; font-size: 12px; font-weight: 800; }

@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "matematicki-klub-v12";
+const CACHE_NAME = "matematicki-klub-v13";
 const APP_FILES = [
   "./",
   "./index.html",

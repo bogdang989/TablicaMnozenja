@@ -8,6 +8,7 @@ const POINTS_WRONG = 3;
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 const DIFFICULTIES = { lako: "Lako", srednje: "Srednje", tesko: "Teško" };
+const SCRIPTS = { latinica: "Latinica", cirilica: "Ćirilica" };
 
 const LETTER_PAIRS = [
   ["А", "A"], ["Б", "B"], ["В", "V"], ["Г", "G"], ["Д", "D"], ["Ђ", "Đ"], ["Е", "E"],
@@ -26,12 +27,21 @@ const TENSES = {
   proslo: "prošlom",
   buduce: "budućem"
 };
-const LEVEL_RANGE = { lako: [1, 1], srednje: [1, 2], tesko: [2, 3] };
+
+const LATIN_TO_CYRILLIC = {
+  a: "а", b: "б", c: "ц", č: "ч", ć: "ћ", d: "д", đ: "ђ", e: "е", f: "ф", g: "г", h: "х", i: "и",
+  j: "ј", k: "к", l: "л", m: "м", n: "н", o: "о", p: "п", r: "р", s: "с", š: "ш", t: "т", u: "у",
+  v: "в", z: "з", ž: "ж"
+};
+const LATIN_DIGRAPHS = { lj: "љ", nj: "њ", dž: "џ" };
 
 const GAMES = {
   mnozenje: {
     name: "Tablica množenja",
     roundMs: 30000,
+    optionLabel: "Težina",
+    options: DIFFICULTIES,
+    defaultOption: "srednje",
     hints: {
       lako: "Množenje brojeva od 1 do 5",
       srednje: "Množenje brojeva od 1 do 9",
@@ -50,23 +60,28 @@ const GAMES = {
   jezik: {
     name: "Jezički kviz",
     roundMs: 60000,
+    optionLabel: "Pismo",
+    options: SCRIPTS,
+    defaultOption: "latinica",
     hints: {
-      lako: "Jednostavnije reči, slova na latinici",
-      srednje: "Sva pitanja, slova na latinici i ćirilici",
-      tesko: "Teže reči i duži glagoli, slova na ćirilici"
+      latinica: "Pitanja i odgovori su na latinici",
+      cirilica: "Pitanja i odgovori su na ćirilici"
     },
     correctLabel: "Tačni odgovori",
     wrongLabel: "Netačni odgovori",
-    rules: (difficulty) => [
+    rules: (script) => [
       ["⏱️", "Vreme igre:", `${GAMES.jezik.roundMs / 1000} sekundi`],
       ["⭐", "Tačan odgovor:", `+${POINTS_CORRECT} poena`, "plus"],
       ["❌", "Netačan odgovor:", `−${POINTS_WRONG} poena`, "minus"],
       ["📚", "Pitanja:", "vrste reči, slova, slogovi i glagoli"],
-      ["🎯", "Težina:", DIFFICULTIES[difficulty]]
+      ["🔤", "Pismo:", SCRIPTS[script]]
     ]
   },
   spojnice: {
     name: "Spojnice",
+    optionLabel: "Težina",
+    options: DIFFICULTIES,
+    defaultOption: "srednje",
     hints: {
       lako: "Slova koja se lako prepoznaju",
       srednje: "Sva slova azbuke",
@@ -141,13 +156,38 @@ function markSelected(container, attribute, value) {
   });
 }
 
+function normalizeOption(gameId, value) {
+  return GAMES[gameId].options[value] ? value : GAMES[gameId].defaultOption;
+}
+
+function renderOptionButtons(container, gameId, selected, buttonClass, isRadio) {
+  const options = Object.entries(GAMES[gameId].options);
+  container.style.setProperty("--option-count", String(options.length));
+  container.replaceChildren(...options.map(([value, label]) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `${buttonClass}${value === selected ? " is-selected" : ""}`;
+    button.dataset.difficulty = value;
+    button.textContent = label;
+    if (isRadio) {
+      button.setAttribute("role", "radio");
+      button.setAttribute("aria-checked", String(value === selected));
+    }
+    return button;
+  }));
+}
+
 function renderMenuSelection() {
+  selection.difficulty = normalizeOption(selection.game, selection.difficulty);
   document.querySelectorAll("[data-subject-game]").forEach((card) => {
     card.hidden = card.dataset.subjectGame !== selection.subject;
   });
   markSelected(document.querySelector("#game-picker"), "data-game", selection.game);
-  markSelected(document.querySelector("#difficulty-picker"), "data-difficulty", selection.difficulty);
-  document.querySelector("#difficulty-hint").textContent = GAMES[selection.game].hints[selection.difficulty];
+  const config = GAMES[selection.game];
+  document.querySelector("#difficulty-label").textContent = config.optionLabel;
+  document.querySelector("#difficulty-picker").setAttribute("aria-label", config.optionLabel);
+  renderOptionButtons(document.querySelector("#difficulty-picker"), selection.game, selection.difficulty, "difficulty-button", true);
+  document.querySelector("#difficulty-hint").textContent = config.hints[selection.difficulty];
   document.querySelectorAll("#subject-picker [data-subject]").forEach((button) => {
     button.classList.toggle("is-selected", button.dataset.subject === selection.subject);
   });
@@ -212,21 +252,39 @@ function startSelectedGame() {
 
 const QUESTION_MAKERS = {
   mnozenje: (difficulty) => makeQuestion(difficulty),
-  jezik: (difficulty) => makeLanguageQuestion(difficulty)
+  jezik: (script) => makeLanguageQuestion(script)
 };
 
 function pickRandom(items) {
   return items[randomInt(0, items.length - 1)];
 }
 
-function filterByLevel(items, difficulty) {
-  const [minLevel, maxLevel] = LEVEL_RANGE[difficulty];
-  const matching = items.filter((item) => item.nivo >= minLevel && item.nivo <= maxLevel);
-  return matching.length > 0 ? matching : items;
+function toCyrillic(text) {
+  return text
+    .replace(/lj|nj|dž/gi, (match) => {
+      const letter = LATIN_DIGRAPHS[match.toLowerCase()];
+      return match[0] === match[0].toLowerCase() ? letter : letter.toUpperCase();
+    })
+    .replace(/[a-zčćđšž]/gi, (char) => {
+      const letter = LATIN_TO_CYRILLIC[char.toLowerCase()];
+      return char === char.toLowerCase() ? letter : letter.toUpperCase();
+    });
 }
 
-function makeWordTypeQuestion(difficulty) {
-  const word = pickRandom(filterByLevel(BAZA_SRPSKI.vrsteReci, difficulty));
+function localizeQuestion(question, script) {
+  if (script !== "cirilica") return question;
+  const localize = (value) => (typeof value === "string" ? toCyrillic(value) : value);
+  return {
+    ...question,
+    prompt: localize(question.prompt),
+    word: localize(question.word),
+    correctAnswer: localize(question.correctAnswer),
+    choices: question.choices.map(localize)
+  };
+}
+
+function makeWordTypeQuestion() {
+  const word = pickRandom(BAZA_SRPSKI.vrsteReci);
   return {
     key: `vrsta|${word.rec}`,
     prompt: "Koja je *vrsta reči* ove reči?",
@@ -237,22 +295,22 @@ function makeWordTypeQuestion(difficulty) {
   };
 }
 
-function makeLetterQuestion(difficulty, letterType) {
-  const script = difficulty === "lako" ? "lat" : difficulty === "tesko" ? "cir" : pickRandom(["lat", "cir"]);
-  const letters = BAZA_SRPSKI.slova.filter((letter) => script === "cir" || letter.lat.length === 1);
+function makeLetterQuestion(script, letterType) {
+  const letterScript = script === "cirilica" ? "cir" : "lat";
+  const letters = BAZA_SRPSKI.slova.filter((letter) => letterScript === "cir" || letter.lat.length === 1);
   const correct = pickRandom(letters.filter((letter) => letter.tip === letterType));
   const others = shuffle(letters.filter((letter) => letter.tip !== letterType)).slice(0, 3);
   return {
     key: `slovo|${letterType}|${correct.lat}`,
     prompt: `Koje slovo je *${letterType}*?`,
-    correctAnswer: correct[script],
-    choices: shuffle([correct, ...others].map((letter) => letter[script])),
+    correctAnswer: correct[letterScript],
+    choices: shuffle([correct, ...others].map((letter) => letter[letterScript])),
     longAnswers: false
   };
 }
 
-function makeSyllableQuestion(difficulty) {
-  const word = pickRandom(filterByLevel(BAZA_SRPSKI.slogovi, difficulty));
+function makeSyllableQuestion() {
+  const word = pickRandom(BAZA_SRPSKI.slogovi);
   const nearby = [1, 2, 3, 4, 5, 6, 7].filter((count) => count !== word.slogova && Math.abs(count - word.slogova) <= 2);
   const choices = [word.slogova, ...shuffle(nearby).slice(0, 3)].sort((left, right) => left - right);
   return {
@@ -265,9 +323,9 @@ function makeSyllableQuestion(difficulty) {
   };
 }
 
-function makeVerbTenseQuestion(difficulty) {
+function makeVerbTenseQuestion() {
   const tense = pickRandom(Object.keys(TENSES));
-  const verb = pickRandom(filterByLevel(BAZA_SRPSKI.glagoli, difficulty));
+  const verb = pickRandom(BAZA_SRPSKI.glagoli);
   const otherTenses = Object.keys(TENSES).filter((name) => name !== tense);
   const wrongForms = [];
   shuffle(BAZA_SRPSKI.glagoli.filter((other) => other !== verb)).forEach((other) => {
@@ -283,15 +341,15 @@ function makeVerbTenseQuestion(difficulty) {
   };
 }
 
-function makeLanguageQuestion(difficulty) {
+function makeLanguageQuestion(script) {
   const makers = [
     makeWordTypeQuestion,
-    (level) => makeLetterQuestion(level, "samoglasnik"),
-    (level) => makeLetterQuestion(level, "suglasnik"),
+    () => makeLetterQuestion(script, "samoglasnik"),
+    () => makeLetterQuestion(script, "suglasnik"),
     makeSyllableQuestion,
     makeVerbTenseQuestion
   ];
-  return pickRandom(makers)(difficulty);
+  return localizeQuestion(pickRandom(makers)(), script);
 }
 
 /* Tablica množenja */
@@ -629,11 +687,10 @@ function loadScores() {
       Number.isFinite(score.correct) &&
       typeof score.date === "string"
     )
-    .map((score) => ({
-      ...score,
-      game: GAMES[score.game] ? score.game : "mnozenje",
-      difficulty: DIFFICULTIES[score.difficulty] ? score.difficulty : "srednje"
-    }));
+    .map((score) => {
+      const gameId = GAMES[score.game] ? score.game : "mnozenje";
+      return { ...score, game: gameId, difficulty: normalizeOption(gameId, score.difficulty) };
+    });
 }
 
 function sortAndTrim(scores) {
@@ -709,7 +766,7 @@ function showResults() {
   document.querySelector("#final-wrong").textContent = String(game.wrong);
   document.querySelector("#final-correct-label").textContent = config.correctLabel;
   document.querySelector("#final-wrong-label").textContent = config.wrongLabel;
-  document.querySelector("#leaderboard-context").textContent = `${config.name} · ${DIFFICULTIES[game.difficulty]}`;
+  document.querySelector("#leaderboard-context").textContent = `${config.name} · ${config.options[game.difficulty]}`;
 
   const storageMessage = document.querySelector("#storage-message");
   storageMessage.hidden = !game.storageError;
@@ -726,8 +783,9 @@ function showResults() {
 }
 
 function renderRankScreen() {
+  rankFilter.difficulty = normalizeOption(rankFilter.game, rankFilter.difficulty);
   markSelected(document.querySelector("#rank-game-filter"), "data-game", rankFilter.game);
-  markSelected(document.querySelector("#rank-difficulty-filter"), "data-difficulty", rankFilter.difficulty);
+  renderOptionButtons(document.querySelector("#rank-difficulty-filter"), rankFilter.game, rankFilter.difficulty, "filter-chip", false);
   const message = document.querySelector("#scores-message");
   try {
     renderLeaderboard(
