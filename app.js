@@ -2,7 +2,6 @@
 
 const SCORE_STORAGE_KEY = "matematicki-klub-high-scores-v1";
 const MAX_SCORES = 10;
-const ROUND_MS = 30000;
 const MATCH_COUNT = 10;
 const POINTS_CORRECT = 5;
 const POINTS_WRONG = 3;
@@ -21,9 +20,18 @@ const LETTER_PAIRS = [
 const EASY_LATIN = ["A", "B", "V", "G", "D", "E", "Z", "I", "K", "L", "M", "N", "O", "P", "R", "S", "T", "U"];
 const HARD_LATIN = ["Đ", "Ž", "J", "Lj", "Nj", "Ć", "F", "H", "C", "Č", "Dž", "Š"];
 
+const WORD_TYPES = ["Imenica", "Glagol", "Pridev", "Zamenica"];
+const TENSES = {
+  sadasnje: "sadašnjem",
+  proslo: "prošlom",
+  buduce: "budućem"
+};
+const LEVEL_RANGE = { lako: [1, 1], srednje: [1, 2], tesko: [2, 3] };
+
 const GAMES = {
   mnozenje: {
     name: "Tablica množenja",
+    roundMs: 30000,
     hints: {
       lako: "Množenje brojeva od 1 do 5",
       srednje: "Množenje brojeva od 1 do 9",
@@ -32,10 +40,28 @@ const GAMES = {
     correctLabel: "Tačni odgovori",
     wrongLabel: "Netačni odgovori",
     rules: (difficulty) => [
-      ["⏱️", "Vreme igre:", "30 sekundi"],
+      ["⏱️", "Vreme igre:", `${GAMES.mnozenje.roundMs / 1000} sekundi`],
       ["⭐", "Tačan odgovor:", `+${POINTS_CORRECT} poena`, "plus"],
       ["❌", "Netačan odgovor:", `−${POINTS_WRONG} poena`, "minus"],
       ["🔢", "Izaberi jedan od", "4 odgovora"],
+      ["🎯", "Težina:", DIFFICULTIES[difficulty]]
+    ]
+  },
+  jezik: {
+    name: "Jezički kviz",
+    roundMs: 60000,
+    hints: {
+      lako: "Jednostavnije reči, slova na latinici",
+      srednje: "Sva pitanja, slova na latinici i ćirilici",
+      tesko: "Teže reči i duži glagoli, slova na ćirilici"
+    },
+    correctLabel: "Tačni odgovori",
+    wrongLabel: "Netačni odgovori",
+    rules: (difficulty) => [
+      ["⏱️", "Vreme igre:", `${GAMES.jezik.roundMs / 1000} sekundi`],
+      ["⭐", "Tačan odgovor:", `+${POINTS_CORRECT} poena`, "plus"],
+      ["❌", "Netačan odgovor:", `−${POINTS_WRONG} poena`, "minus"],
+      ["📚", "Pitanja:", "vrste reči, slova, slogovi i glagoli"],
       ["🎯", "Težina:", DIFFICULTIES[difficulty]]
     ]
   },
@@ -163,11 +189,13 @@ function newGameState() {
     gameId: selection.game,
     difficulty: selection.difficulty,
     playerName,
+    roundMs: GAMES[selection.game].roundMs || 0,
     score: 0,
     correct: 0,
     wrong: 0,
     total: 0,
     currentQuestion: null,
+    lastQuestionKey: null,
     deadline: 0,
     savedDate: null,
     scores: []
@@ -177,7 +205,93 @@ function newGameState() {
 function startSelectedGame() {
   stopTimers();
   if (selection.game === "spojnice") startMatchGame();
-  else startMultiplicationGame();
+  else startQuizGame();
+}
+
+/* Pitanja sa 4 ponuđena odgovora */
+
+const QUESTION_MAKERS = {
+  mnozenje: (difficulty) => makeQuestion(difficulty),
+  jezik: (difficulty) => makeLanguageQuestion(difficulty)
+};
+
+function pickRandom(items) {
+  return items[randomInt(0, items.length - 1)];
+}
+
+function filterByLevel(items, difficulty) {
+  const [minLevel, maxLevel] = LEVEL_RANGE[difficulty];
+  const matching = items.filter((item) => item.nivo >= minLevel && item.nivo <= maxLevel);
+  return matching.length > 0 ? matching : items;
+}
+
+function makeWordTypeQuestion(difficulty) {
+  const word = pickRandom(filterByLevel(BAZA_SRPSKI.vrsteReci, difficulty));
+  return {
+    key: `vrsta|${word.rec}`,
+    prompt: "Koja je *vrsta reči* ove reči?",
+    word: word.rec,
+    correctAnswer: word.vrsta.charAt(0).toUpperCase() + word.vrsta.slice(1),
+    choices: [...WORD_TYPES],
+    longAnswers: true
+  };
+}
+
+function makeLetterQuestion(difficulty, letterType) {
+  const script = difficulty === "lako" ? "lat" : difficulty === "tesko" ? "cir" : pickRandom(["lat", "cir"]);
+  const letters = BAZA_SRPSKI.slova.filter((letter) => script === "cir" || letter.lat.length === 1);
+  const correct = pickRandom(letters.filter((letter) => letter.tip === letterType));
+  const others = shuffle(letters.filter((letter) => letter.tip !== letterType)).slice(0, 3);
+  return {
+    key: `slovo|${letterType}|${correct.lat}`,
+    prompt: `Koje slovo je *${letterType}*?`,
+    correctAnswer: correct[script],
+    choices: shuffle([correct, ...others].map((letter) => letter[script])),
+    longAnswers: false
+  };
+}
+
+function makeSyllableQuestion(difficulty) {
+  const word = pickRandom(filterByLevel(BAZA_SRPSKI.slogovi, difficulty));
+  const nearby = [1, 2, 3, 4, 5, 6, 7].filter((count) => count !== word.slogova && Math.abs(count - word.slogova) <= 2);
+  const choices = [word.slogova, ...shuffle(nearby).slice(0, 3)].sort((left, right) => left - right);
+  return {
+    key: `slogovi|${word.rec}`,
+    prompt: "Koliko *slogova* ima ova reč?",
+    word: word.rec,
+    correctAnswer: word.slogova,
+    choices,
+    longAnswers: false
+  };
+}
+
+function makeVerbTenseQuestion(difficulty) {
+  const tense = pickRandom(Object.keys(TENSES));
+  const verb = pickRandom(filterByLevel(BAZA_SRPSKI.glagoli, difficulty));
+  const otherTenses = Object.keys(TENSES).filter((name) => name !== tense);
+  const wrongForms = [];
+  shuffle(BAZA_SRPSKI.glagoli.filter((other) => other !== verb)).forEach((other) => {
+    const form = other[pickRandom(otherTenses)];
+    if (wrongForms.length < 3 && !wrongForms.includes(form) && form !== verb[tense]) wrongForms.push(form);
+  });
+  return {
+    key: `glagol|${tense}|${verb.sadasnje}`,
+    prompt: `Koji glagol je u *${TENSES[tense]}* vremenu?`,
+    correctAnswer: verb[tense],
+    choices: shuffle([verb[tense], ...wrongForms]),
+    longAnswers: true
+  };
+}
+
+function makeLanguageQuestion(difficulty) {
+  const makers = [
+    makeWordTypeQuestion,
+    (level) => makeLetterQuestion(level, "samoglasnik"),
+    (level) => makeLetterQuestion(level, "suglasnik"),
+    makeSyllableQuestion,
+    makeVerbTenseQuestion
+  ];
+  return pickRandom(makers)(difficulty);
 }
 
 /* Tablica množenja */
@@ -203,14 +317,46 @@ function makeQuestion(difficulty) {
   const poolMax = difficulty === "lako" ? 25 : 81;
   while (answers.size < 4) answers.add(randomInt(1, poolMax));
 
-  return { first, second, correctAnswer, choices: shuffle(Array.from(answers)) };
+  return { key: `${first}x${second}`, first, second, correctAnswer, choices: shuffle(Array.from(answers)) };
+}
+
+function renderQuestionText(question) {
+  const questionText = document.querySelector("#question-text");
+  questionText.classList.toggle("is-language", Boolean(question.prompt));
+  if (!question.prompt) {
+    questionText.innerHTML = `${question.first} <span>×</span> ${question.second} <span>=</span> ?`;
+    return;
+  }
+
+  const prompt = document.createElement("span");
+  prompt.className = "question-prompt";
+  question.prompt.split("*").forEach((part, index) => {
+    if (index % 2 === 1) {
+      const accent = document.createElement("strong");
+      accent.textContent = part;
+      prompt.append(accent);
+    } else {
+      prompt.append(part);
+    }
+  });
+  questionText.replaceChildren(prompt);
+  if (question.word) {
+    const word = document.createElement("span");
+    word.className = "question-word";
+    word.textContent = question.word;
+    questionText.append(word);
+  }
 }
 
 function renderQuestion() {
-  const question = makeQuestion(game.difficulty);
+  let question = QUESTION_MAKERS[game.gameId](game.difficulty);
+  for (let attempt = 0; attempt < 5 && question.key === game.lastQuestionKey; attempt += 1) {
+    question = QUESTION_MAKERS[game.gameId](game.difficulty);
+  }
   game.currentQuestion = question;
-  document.querySelector("#question-text").innerHTML =
-    `${question.first} <span>×</span> ${question.second} <span>=</span> ?`;
+  game.lastQuestionKey = question.key;
+  renderQuestionText(question);
+  document.querySelector("#answer-grid").classList.toggle("is-text", Boolean(question.longAnswers));
   answerButtons.forEach((button, index) => {
     button.textContent = String(question.choices[index]);
     button.disabled = false;
@@ -232,15 +378,15 @@ function updateTimer() {
   const seconds = String(remainingSeconds % 60).padStart(2, "0");
   document.querySelector("#timer-text").textContent = `${minutes}:${seconds}`;
   const timerFill = document.querySelector("#timer-fill");
-  timerFill.style.width = `${(remainingMs / ROUND_MS) * 100}%`;
+  timerFill.style.width = `${(remainingMs / game.roundMs) * 100}%`;
   timerFill.classList.toggle("is-low", remainingSeconds <= 10);
 
-  if (remainingMs <= 0) finishMultiplicationGame();
+  if (remainingMs <= 0) finishQuizGame();
 }
 
-function startMultiplicationGame() {
+function startQuizGame() {
   game = newGameState();
-  game.deadline = Date.now() + ROUND_MS;
+  game.deadline = Date.now() + game.roundMs;
   updateScore();
   renderQuestion();
   showScreen("game");
@@ -260,14 +406,18 @@ function showFeedback(isCorrect, correctAnswer) {
   document.querySelector("#feedback-overlay").hidden = false;
 }
 
+function isQuizGame() {
+  return Boolean(game) && game.gameId !== "spojnice";
+}
+
 function selectAnswer(button) {
-  if (!game || game.gameId !== "mnozenje" || game.deadline <= Date.now() || button.disabled) {
-    if (game && game.gameId === "mnozenje" && game.deadline <= Date.now()) finishMultiplicationGame();
+  if (!isQuizGame() || game.deadline <= Date.now() || button.disabled) {
+    if (isQuizGame() && game.deadline <= Date.now()) finishQuizGame();
     return;
   }
 
-  const { correctAnswer } = game.currentQuestion;
-  const isCorrect = Number(button.textContent) === correctAnswer;
+  const correctAnswer = String(game.currentQuestion.correctAnswer);
+  const isCorrect = button.textContent === correctAnswer;
   game.total += 1;
   if (isCorrect) {
     game.score += POINTS_CORRECT;
@@ -279,7 +429,7 @@ function selectAnswer(button) {
 
   answerButtons.forEach((answerButton) => {
     answerButton.disabled = true;
-    if (Number(answerButton.textContent) === correctAnswer) {
+    if (answerButton.textContent === correctAnswer) {
       answerButton.classList.add(isCorrect && answerButton === button ? "is-correct" : "is-reveal");
     } else if (answerButton === button) {
       answerButton.classList.add("is-wrong");
@@ -290,11 +440,11 @@ function selectAnswer(button) {
   showFeedback(isCorrect, correctAnswer);
   feedbackTimeout = window.setTimeout(() => {
     if (game && game.deadline > Date.now()) renderQuestion();
-    else if (game) finishMultiplicationGame();
+    else if (game) finishQuizGame();
   }, 850);
 }
 
-function finishMultiplicationGame() {
+function finishQuizGame() {
   if (!game || screens.game.hidden) return;
   stopTimers();
   persistResult();

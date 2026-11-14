@@ -297,6 +297,9 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 .question-board::before { position: absolute; inset: 6px; border: 2px solid #fff8df; border-radius: 22px; content: ""; pointer-events: none; }
 .question-text { color: #0c2857; font-family: "Baloo 2", "Nunito", sans-serif; font-size: clamp(57px, 11vw, 104px); font-weight: 800; letter-spacing: .01em; line-height: 1; text-shadow: 0 2px 0 #fff; }
+.question-text.is-language { display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: "Nunito", sans-serif; font-size: clamp(24px, 5.4vw, 42px); font-weight: 900; line-height: 1.2; text-align: center; }
+.question-text.is-language strong { color: #b5420c; font-weight: 1000; }
+.question-word { color: #0c2857; font-family: "Baloo 2", "Nunito", sans-serif; font-size: 1.9em; font-weight: 800; line-height: 1.05; overflow-wrap: anywhere; }
 .answer-grid { position: relative; z-index: 2; width: min(690px, 90vw); display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px; margin: 0 0 auto; }
 .answer-button {
   min-height: clamp(62px, 12vh, 84px);
@@ -317,6 +320,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .answer-button:hover:not(:disabled) { filter: brightness(1.07); transform: translateY(-2px); }
 .answer-button:active:not(:disabled) { transform: translateY(2px); }
 .answer-button:disabled { cursor: default; }
+.answer-grid.is-text .answer-button { font-family: "Nunito", sans-serif; font-size: clamp(20px, 4.6vw, 32px); font-weight: 900; }
 .answer-button.is-correct, .answer-button.is-reveal { border-color: #278a09; background: linear-gradient(#8dff50, #38d00b); color: #06280b; }
 .answer-button.is-wrong { border-color: #ad3026; background: linear-gradient(#ffaf9f, #f07162); color: #52140d; }
 
@@ -607,6 +611,8 @@ tbody tr.is-current:first-child td { background: #ffe783; }
   .round-progress { height: calc(6px * var(--s)); }
   .question-board { width: min(calc(720px * var(--s)), 88vw); min-height: clamp(calc(120px * var(--s)), 26vh, calc(230px * var(--s))); }
   .question-text { font-size: clamp(57px, 12vw, calc(96px * var(--s))); }
+  .question-text.is-language { font-size: clamp(28px, 5vw, calc(40px * var(--s))); }
+  .answer-grid.is-text .answer-button { font-size: clamp(22px, 4.2vw, calc(34px * var(--s))); }
   .answer-grid { width: min(calc(690px * var(--s)), 90vw); gap: calc(13px * var(--s)); }
   .answer-button { min-height: clamp(calc(62px * var(--s)), 12vh, calc(100px * var(--s))); font-size: clamp(30px, 5.5vw, calc(46px * var(--s))); }
   .quit-button { min-height: calc(46px * var(--s)); font-size: calc(16px * var(--s)); }

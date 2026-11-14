@@ -87,14 +87,14 @@
                   <span class="game-card-name">Spojnice</span>
                   <span class="game-card-desc">Ćirilica i latinica</span>
                 </button>
+                <button class="game-card" type="button" role="radio" aria-checked="false" data-game="jezik" data-subject-game="srpski" hidden>
+                  <span class="game-card-icon" aria-hidden="true">📚</span>
+                  <span class="game-card-name">Jezički kviz</span>
+                  <span class="game-card-desc">Brzi kviz · 60 sekundi</span>
+                </button>
                 <button class="game-card upcoming-game" type="button" disabled data-subject-game="matematika">
                   <span class="game-card-icon" aria-hidden="true">🔒</span>
                   <span class="game-card-name">Matematički izazovi</span>
-                  <span class="game-card-desc">Uskoro</span>
-                </button>
-                <button class="game-card upcoming-game" type="button" disabled data-subject-game="srpski" hidden>
-                  <span class="game-card-icon" aria-hidden="true">🔒</span>
-                  <span class="game-card-name">Pravopisni izazovi</span>
                   <span class="game-card-desc">Uskoro</span>
                 </button>
               </div>
@@ -216,6 +216,7 @@
                     <div id="rank-game-filter" class="filter-row" role="group" aria-label="Igra">
                       <button class="filter-chip is-selected" type="button" data-game="mnozenje">Množenje</button>
                       <button class="filter-chip" type="button" data-game="spojnice">Spojnice</button>
+                      <button class="filter-chip" type="button" data-game="jezik">Jezički kviz</button>
                     </div>
                     <div id="rank-difficulty-filter" class="filter-row" role="group" aria-label="Težina">
                       <button class="filter-chip" type="button" data-difficulty="lako">Lako</button>
@@ -235,6 +236,7 @@
         </div>
       </section>
     </main>
+    <script src="./pitanja-srpski.js" defer></script>
     <script src="./app.js" defer></script>
   </body>
 </html>

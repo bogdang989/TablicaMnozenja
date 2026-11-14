@@ -2,7 +2,7 @@
 
 Radni pregled za osnovnu školu u Srbiji, organizovan po razredima i predmetima. Teme su sažete u veće celine, a predlog igre pokazuje kako bi svaka celina mogla da se pretvori u interaktivno vežbanje. Pre izrade sadržaja treba proveriti detalje prema važećem programu i planu konkretne škole, naročito za strane jezike i izborne predmete.
 
-U meniju su trenutno aktivni samo **2. razred → Matematika → Tablica množenja** i **2. razred → Srpski jezik → Spojnice**. Ostali razredi, predmeti i ideje za igre u ovom planu služe kao putokaz za naredne faze.
+U meniju su trenutno aktivni samo **2. razred → Matematika → Tablica množenja**, **2. razred → Srpski jezik → Spojnice** i **2. razred → Srpski jezik → Jezički kviz** (pitanja se nalaze u `pitanja-srpski.js`). Ostali razredi, predmeti i ideje za igre u ovom planu služe kao putokaz za naredne faze.
 
 ## 1. razred
 

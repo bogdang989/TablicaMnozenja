@@ -1,11 +1,12 @@
 "use strict";
 
-const CACHE_NAME = "matematicki-klub-v11";
+const CACHE_NAME = "matematicki-klub-v12";
 const APP_FILES = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./pitanja-srpski.js",
   "./manifest.webmanifest",
   "./favicon.ico?v=1",
   "./icon-192.png?v=2",
