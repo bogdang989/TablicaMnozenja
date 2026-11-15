@@ -329,6 +329,14 @@ function makeLetterQuestion(script, letterType) {
   };
 }
 
+function syllableNuclei(word) {
+  const isVowel = (char) => Boolean(char) && "aeiou".includes(char);
+  const letters = Array.from(word.toLowerCase());
+  return letters.filter((char, index) =>
+    isVowel(char) || (char === "r" && !isVowel(letters[index - 1]) && !isVowel(letters[index + 1]))
+  );
+}
+
 function makeSyllableQuestion() {
   const entries = Object.entries(BAZA_SRPSKI.slogovi).flatMap(([count, words]) =>
     words.map((rec) => ({ rec, slogova: Number(count) }))
@@ -336,13 +344,18 @@ function makeSyllableQuestion() {
   const word = pickRandom(entries);
   const nearby = [1, 2, 3, 4, 5, 6, 7].filter((count) => count !== word.slogova && Math.abs(count - word.slogova) <= 2);
   const choices = [word.slogova, ...shuffle(nearby).slice(0, 3)].sort((left, right) => left - right);
-  const vowels = (word.rec.match(/[aeiou]/gi) || []).join(", ");
+  const nuclei = syllableNuclei(word.rec);
+  const nucleiText = nuclei.length > 1 ? `${nuclei.slice(0, -1).join(", ")} i ${nuclei[nuclei.length - 1]}` : nuclei[0];
+  const hasSyllabicR = nuclei.includes("r");
+  const reason = hasSyllabicR
+    ? `Svaki samoglasnik je jedan slog, a slog može da napravi i slovo R kad stoji između suglasnika. U reči „${word.rec}“ slog prave: ${nucleiText}`
+    : `Svaki samoglasnik je jedan slog. U reči „${word.rec}“ samoglasnici su ${nucleiText}`;
   return {
     key: `slogovi|${word.rec}`,
     prompt: "Koliko *slogova* ima ova reč?",
     word: word.rec,
     correctAnswer: word.slogova,
-    explanation: `Svaki samoglasnik je jedan slog. U reči „${word.rec}“ samoglasnici su ${vowels}, pa reč ima ${word.slogova} ${word.slogova <= 4 ? "sloga" : "slogova"}.`,
+    explanation: `${reason}, pa reč ima ${word.slogova} ${word.slogova <= 4 ? "sloga" : "slogova"}.`,
     choices,
     longAnswers: false
   };

@@ -7,7 +7,9 @@
 
   Savete za nove stavke:
   - Vrste reči: ne dodavaj reči koje su istovremeno u više vrsta (npr. „igra“, „crta“, „slika“, „večera“, „čisti“).
-  - Slogovi: svaki samoglasnik je jedan slog. Izbegavaj reči sa samoglasničkim „r“ (npr. „drvo“, „krompir“).
+  - Slogovi: slog prave samoglasnici i slovo „r“ kad stoji između dva suglasnika (npr. dr-vo, cr-ven, če-tvr-tak);
+    „r“ pored samoglasnika (npr. „torba“, „krokodil“) ne pravi slog. Objašnjenje u igri se računa po ovom pravilu,
+    pa broj slogova u ključu mora da mu odgovara.
   - Glagoli: koristi pravilne glagole; proslo je muški rod 3. lica jednine, buduce je jednočlani oblik (npr. „pevaće“).
   - Reči sa pravim „nj“, „lj“ ili „dž“ (a ne dva odvojena slova, npr. „injekcija“) ne dodavati bez provere ćirilice.
 */
@@ -82,18 +84,23 @@ const BAZA_SRPSKI = {
       "mama", "tata", "kuća", "škola", "lopta", "sunce", "mačka", "voda", "knjiga", "torba",
       "sveska", "zima", "leto", "reka", "dečak", "ptica", "sestra", "ruka", "noga", "glava",
       "zvezda", "mesec", "prozor", "pesma", "pismo", "more", "polje", "nebo", "riba", "kiša",
-      "selo", "deca", "leptir", "kompas", "pesak", "vetar", "ljubav", "radost", "sladak", "vrabac"
+      "selo", "deca", "leptir", "kompas", "pesak", "vetar", "ljubav", "radost", "sladak", "vrabac",
+      "drvo", "grlo", "srce", "brdo", "crkva", "krpa", "vrba", "mrkva", "srna", "vrtić",
+      "prsten", "brzo", "crven", "srpski", "krvav", "žrtva", "prvak", "prvi"
     ],
     3: [
       "olovka", "banana", "žirafa", "kišobran", "krokodil", "učenik", "stolica", "devojka", "prijatelj", "planina",
       "avion", "jabuka", "ulica", "sladoled", "paradajz", "računar", "kamion", "bioskop", "ananas", "jagoda",
       "mikroskop", "kilogram", "suglasnik", "pisanje", "čitanje", "pitanje", "učenjak", "kokoška", "ormarić", "mačkica",
-      "leptirić", "tikvica", "kupina", "bundeva", "ljubaznost", "pravopis"
+      "leptirić", "tikvica", "kupina", "bundeva", "ljubaznost", "pravopis",
+      "crveno", "četvrtak", "krtica", "srdačan", "brzina", "trgovac", "trpeza", "hrvatski", "prskati", "grmeti",
+      "četvrti", "krvotok"
     ],
     4: [
       "lubenica", "čokolada", "slikovnica", "veverica", "televizor", "pomorandža", "bubamara", "limunada", "marmelada", "karamela",
       "helikopter", "kupatilo", "pozorište", "prijateljstvo", "komšinica", "avantura", "samoglasnik", "rečenica", "imenica", "zamenica",
-      "neprijatelj", "razglednica", "kilometar", "domaćica", "ekskurzija", "šargarepa", "otkrivanje", "nezavisnost", "zaljubljenost"
+      "neprijatelj", "razglednica", "kilometar", "domaćica", "ekskurzija", "šargarepa", "otkrivanje", "nezavisnost", "zaljubljenost",
+      "trgovina", "grmljavina"
     ],
     5: [
       "učiteljica", "biblioteka", "fotografija", "nezaboravan", "geografija", "akrobatika", "elektronika", "univerzitet", "televizija", "učionica",
