@@ -236,6 +236,7 @@ function newGameState() {
     total: 0,
     currentQuestion: null,
     recentKeys: [],
+    pausedMs: null,
     deadline: 0,
     savedDate: null,
     scores: []
@@ -279,9 +280,22 @@ function localizeQuestion(question, script) {
     prompt: localize(question.prompt),
     word: localize(question.word),
     correctAnswer: localize(question.correctAnswer),
+    explanation: localize(question.explanation),
     choices: question.choices.map(localize)
   };
 }
+
+const WORD_TYPE_HELP = {
+  imenica: "je imenica. Imenice kazuju ko je to ili šta je to: biće, stvar ili pojavu.",
+  glagol: "je glagol. Glagoli kazuju šta neko radi ili šta se događa.",
+  pridev: "je pridev. Pridevi kazuju kakav je neko ili nešto.",
+  zamenica: "je zamenica. Zamenice stoje umesto imena ili imenice."
+};
+const TENSE_HELP = {
+  sadasnje: "Sadašnje vreme kaže šta se događa sada.",
+  proslo: "Prošlo vreme kaže šta se već dogodilo.",
+  buduce: "Buduće vreme kaže šta će se tek dogoditi."
+};
 
 function makeWordTypeQuestion() {
   const type = pickRandom(Object.keys(BAZA_SRPSKI.vrsteReci));
@@ -291,6 +305,7 @@ function makeWordTypeQuestion() {
     prompt: "Koja je *vrsta reči* ove reči?",
     word,
     correctAnswer: type.charAt(0).toUpperCase() + type.slice(1),
+    explanation: `Reč „${word}“ ${WORD_TYPE_HELP[type]}`,
     choices: [...WORD_TYPES],
     longAnswers: true
   };
@@ -301,10 +316,14 @@ function makeLetterQuestion(script, letterType) {
   const letters = BAZA_SRPSKI.slova.filter((letter) => letterScript === "cir" || letter.lat.length === 1);
   const correct = pickRandom(letters.filter((letter) => letter.tip === letterType));
   const others = shuffle(letters.filter((letter) => letter.tip !== letterType)).slice(0, 3);
+  const rule = letterType === "samoglasnik"
+    ? "Samoglasnika ima samo pet: A, E, I, O, U."
+    : "Samoglasnika ima samo pet: A, E, I, O, U. Sva ostala slova su suglasnici.";
   return {
     key: `slovo|${letterType}|${correct.lat}`,
     prompt: `Koje slovo je *${letterType}*?`,
     correctAnswer: correct[letterScript],
+    explanation: `Slovo „${correct.lat}“ je ${letterType}. ${rule}`,
     choices: shuffle([correct, ...others].map((letter) => letter[letterScript])),
     longAnswers: false
   };
@@ -317,11 +336,13 @@ function makeSyllableQuestion() {
   const word = pickRandom(entries);
   const nearby = [1, 2, 3, 4, 5, 6, 7].filter((count) => count !== word.slogova && Math.abs(count - word.slogova) <= 2);
   const choices = [word.slogova, ...shuffle(nearby).slice(0, 3)].sort((left, right) => left - right);
+  const vowels = (word.rec.match(/[aeiou]/gi) || []).join(", ");
   return {
     key: `slogovi|${word.rec}`,
     prompt: "Koliko *slogova* ima ova reč?",
     word: word.rec,
     correctAnswer: word.slogova,
+    explanation: `Svaki samoglasnik je jedan slog. U reči „${word.rec}“ samoglasnici su ${vowels}, pa reč ima ${word.slogova} ${word.slogova <= 4 ? "sloga" : "slogova"}.`,
     choices,
     longAnswers: false
   };
@@ -340,6 +361,7 @@ function makeVerbTenseQuestion() {
     key: `glagol|${tense}|${verb.sadasnje}`,
     prompt: `Koji glagol je u *${TENSES[tense]}* vremenu?`,
     correctAnswer: verb[tense],
+    explanation: `${TENSE_HELP[tense]} Isti glagol: „${verb.sadasnje}“ (sada), „${verb.proslo}“ (ranije), „${verb.buduce}“ (kasnije).`,
     choices: shuffle([verb[tense], ...wrongForms]),
     longAnswers: true
   };
@@ -458,25 +480,50 @@ function startQuizGame() {
   timerInterval = window.setInterval(updateTimer, 100);
 }
 
-function showFeedback(isCorrect, correctAnswer) {
+function showFeedback(isCorrect, correctAnswer, explanation) {
   const card = document.querySelector("#feedback-card");
   const note = document.querySelector("#correct-answer-note");
+  const explanationNote = document.querySelector("#explanation-note");
+  const understoodButton = document.querySelector("#understood-button");
+  const needsAcknowledgement = Boolean(explanation);
   card.classList.toggle("is-wrong", !isCorrect);
+  card.classList.toggle("has-explanation", needsAcknowledgement);
   document.querySelector("#feedback-icon").textContent = isCorrect ? "✓" : "×";
   document.querySelector("#feedback-title").textContent = isCorrect ? "Tačno!" : "Netačno!";
   document.querySelector("#feedback-points").textContent = isCorrect ? `+${POINTS_CORRECT} poena` : `−${POINTS_WRONG} poena`;
   note.hidden = isCorrect;
   note.textContent = isCorrect ? "" : `Tačan odgovor je: ${correctAnswer}`;
+  explanationNote.hidden = !needsAcknowledgement;
+  explanationNote.textContent = explanation || "";
+  understoodButton.hidden = !needsAcknowledgement;
+  understoodButton.textContent = game.difficulty === "cirilica" ? toCyrillic("Razumem") : "Razumem";
   document.querySelector("#feedback-overlay").hidden = false;
+  if (needsAcknowledgement) understoodButton.focus();
 }
 
 function isQuizGame() {
   return Boolean(game) && game.gameId !== "spojnice";
 }
 
+function pauseTimerForExplanation() {
+  game.pausedMs = Math.max(0, game.deadline - Date.now());
+  window.clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function resumeAfterExplanation() {
+  if (!isQuizGame() || game.pausedMs === null) return;
+  game.deadline = Date.now() + game.pausedMs;
+  game.pausedMs = null;
+  updateTimer();
+  if (!game || screens.game.hidden) return;
+  timerInterval = window.setInterval(updateTimer, 100);
+  renderQuestion();
+}
+
 function selectAnswer(button) {
-  if (!isQuizGame() || game.deadline <= Date.now() || button.disabled) {
-    if (isQuizGame() && game.deadline <= Date.now()) finishQuizGame();
+  if (!isQuizGame() || game.pausedMs !== null || game.deadline <= Date.now() || button.disabled) {
+    if (isQuizGame() && game.pausedMs === null && game.deadline <= Date.now()) finishQuizGame();
     return;
   }
 
@@ -501,7 +548,12 @@ function selectAnswer(button) {
   });
 
   updateScore();
-  showFeedback(isCorrect, correctAnswer);
+  const explanation = !isCorrect && game.gameId === "jezik" ? game.currentQuestion.explanation : "";
+  showFeedback(isCorrect, correctAnswer, explanation);
+  if (explanation) {
+    pauseTimerForExplanation();
+    return;
+  }
   feedbackTimeout = window.setTimeout(() => {
     if (game && game.deadline > Date.now()) renderQuestion();
     else if (game) finishQuizGame();
@@ -873,6 +925,7 @@ document.querySelector("#home-scores-button").addEventListener("click", openRank
 document.querySelector("#scores-back-button").addEventListener("click", returnHome);
 document.querySelector("#scores-home-button").addEventListener("click", returnHome);
 document.querySelector("#quit-button").addEventListener("click", returnHome);
+document.querySelector("#understood-button").addEventListener("click", resumeAfterExplanation);
 document.querySelector("#match-quit-button").addEventListener("click", returnHome);
 document.querySelector("#match-done-button").addEventListener("click", checkMatches);
 document.querySelector("#match-continue-button").addEventListener("click", showResults);
