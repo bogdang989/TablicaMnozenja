@@ -235,7 +235,7 @@ function newGameState() {
     wrong: 0,
     total: 0,
     currentQuestion: null,
-    lastQuestionKey: null,
+    recentKeys: [],
     deadline: 0,
     savedDate: null,
     scores: []
@@ -284,12 +284,13 @@ function localizeQuestion(question, script) {
 }
 
 function makeWordTypeQuestion() {
-  const word = pickRandom(BAZA_SRPSKI.vrsteReci);
+  const type = pickRandom(Object.keys(BAZA_SRPSKI.vrsteReci));
+  const word = pickRandom(BAZA_SRPSKI.vrsteReci[type]);
   return {
-    key: `vrsta|${word.rec}`,
+    key: `vrsta|${word}`,
     prompt: "Koja je *vrsta reči* ove reči?",
-    word: word.rec,
-    correctAnswer: word.vrsta.charAt(0).toUpperCase() + word.vrsta.slice(1),
+    word,
+    correctAnswer: type.charAt(0).toUpperCase() + type.slice(1),
     choices: [...WORD_TYPES],
     longAnswers: true
   };
@@ -310,7 +311,10 @@ function makeLetterQuestion(script, letterType) {
 }
 
 function makeSyllableQuestion() {
-  const word = pickRandom(BAZA_SRPSKI.slogovi);
+  const entries = Object.entries(BAZA_SRPSKI.slogovi).flatMap(([count, words]) =>
+    words.map((rec) => ({ rec, slogova: Number(count) }))
+  );
+  const word = pickRandom(entries);
   const nearby = [1, 2, 3, 4, 5, 6, 7].filter((count) => count !== word.slogova && Math.abs(count - word.slogova) <= 2);
   const choices = [word.slogova, ...shuffle(nearby).slice(0, 3)].sort((left, right) => left - right);
   return {
@@ -406,13 +410,15 @@ function renderQuestionText(question) {
   }
 }
 
+const RECENT_QUESTIONS = 12;
+
 function renderQuestion() {
   let question = QUESTION_MAKERS[game.gameId](game.difficulty);
-  for (let attempt = 0; attempt < 5 && question.key === game.lastQuestionKey; attempt += 1) {
+  for (let attempt = 0; attempt < 30 && game.recentKeys.includes(question.key); attempt += 1) {
     question = QUESTION_MAKERS[game.gameId](game.difficulty);
   }
   game.currentQuestion = question;
-  game.lastQuestionKey = question.key;
+  game.recentKeys = [...game.recentKeys, question.key].slice(-RECENT_QUESTIONS);
   renderQuestionText(question);
   document.querySelector("#answer-grid").classList.toggle("is-text", Boolean(question.longAnswers));
   answerButtons.forEach((button, index) => {
